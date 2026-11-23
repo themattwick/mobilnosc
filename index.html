@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#14181f">
+<title>Mobilność</title>
+<style>
+  :root { --bg:#14181f; --card:#1e242e; --text:#e8ecf1; --muted:#9aa5b4; --accent:#4cc38a; --warn:#e5a54b; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--text); font-size:17px; line-height:1.4; }
+  header { padding:16px 16px 8px; }
+  h1 { font-size:22px; margin:0 0 4px; }
+  .sub { color:var(--muted); font-size:14px; }
+  nav { display:flex; gap:8px; padding:8px 16px; position:sticky; top:0; background:var(--bg); z-index:2; }
+  nav button { flex:1; padding:12px 4px; border-radius:12px; border:1px solid #2d3542; background:var(--card); color:var(--text); font-size:15px; }
+  nav button.on { background:var(--accent); color:#0b1a12; border-color:var(--accent); font-weight:600; }
+  main { padding:8px 16px 120px; }
+  .card { background:var(--card); border-radius:14px; padding:14px; margin-bottom:12px; }
+  .card.done { opacity:.55; }
+  .row { display:flex; align-items:flex-start; gap:12px; }
+  .row input[type=checkbox] { width:26px; height:26px; margin-top:2px; accent-color:var(--accent); flex:none; }
+  .name { font-weight:600; }
+  .detail { color:var(--muted); font-size:15px; margin-top:4px; }
+  .tbtn { margin-top:10px; padding:10px 14px; border-radius:10px; border:none; background:#2d3542; color:var(--text); font-size:15px; }
+  .rules { font-size:15px; color:var(--muted); }
+  .rules b { color:var(--text); }
+  #timer { position:fixed; left:0; right:0; bottom:0; background:#0e1116; border-top:1px solid #2d3542; padding:12px 16px; display:none; align-items:center; gap:12px; z-index:3; }
+  #timer.show { display:flex; }
+  #tval { font-size:34px; font-variant-numeric:tabular-nums; font-weight:700; min-width:90px; }
+  #tlabel { flex:1; font-size:14px; color:var(--muted); }
+  #timer button { padding:10px 14px; border-radius:10px; border:none; font-size:15px; }
+  .finish { width:100%; padding:16px; border-radius:14px; border:none; background:var(--accent); color:#0b1a12; font-size:17px; font-weight:700; margin-top:6px; }
+  .stat { font-size:15px; margin:4px 0; }
+  .warn { color:var(--warn); }
+  label.f { display:block; margin:10px 0 4px; font-size:15px; }
+  input.num { width:100%; padding:10px; border-radius:10px; border:1px solid #2d3542; background:#11151b; color:var(--text); font-size:16px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  td, th { padding:6px 4px; border-bottom:1px solid #2d3542; text-align:left; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Mobilność: biodra, barki, plecy</h1>
+  <div class="sub" id="today"></div>
+</header>
+<nav id="tabs"></nav>
+<main id="view"></main>
+<div id="timer">
+  <div id="tval">0:00</div>
+  <div id="tlabel"></div>
+  <button id="tpause">Pauza</button>
+  <button id="tstop">✕</button>
+</div>
+
+<script>
+"use strict";
+
+const DAYS = {
+  A: { title: "A – biodra", items: [
+    { n: "CARs biodra", d: "3 powolne kręgi w każdą stronę, na każdą nogę, przy ścianie.", t: 90 },
+    { n: "Chodzenie tyłem", d: "Małe kroki na palcach, po pokoju lub korytarzu.", t: 120 },
+    { n: "90/90 z PAILs/RAILs", d: "Na stronę: 1 min w pozycji, 10 s wciskaj kolano i stopę w podłogę (20–30%), 10 s unieś je bez rąk. 2 rundy na stronę.", t: 240 },
+    { n: "Wykrok ATG, przednia stopa na kostce", d: "Kettlebell przy klatce, kolano za palce, tylne kolano do ziemi, 3–4 s w dół. 2 × 6 na nogę.", t: 0 },
+    { n: "Przysiad z kettlebellem – przytrzymanie", d: "Na dole przenoś ciężar z boku na bok. 2 × 30 s.", t: 30 }
+  ]},
+  B: { title: "B – barki i odcinek piersiowy", items: [
+    { n: "CARs barku i kręgosłupa", d: "3 duże kręgi w każdą stronę na rękę; 4 × koci grzbiet krąg po kręgu.", t: 120 },
+    { n: "Przenoszenie kettlebella za głowę", d: "Na plecach, oburącz, 3 s w dół. 2 × 10. Gdy łatwe: plecy na kostkach.", t: 0 },
+    { n: "Wyprost na wałku + otwieranie książki", d: "8 wolnych wyprostów, dłonie za głową; 6 otwarć na stronę.", t: 0 },
+    { n: "Najszerszy z PAILs/RAILs", d: "W klęku, łokcie na kostkach, biodra do pięt: 1 min, 10 s wciskaj łokcie, 10 s unieś. 2 rundy.", t: 180 },
+    { n: "Rotacja zewnętrzna z gumą", d: "Łokieć przy boku. 2 × 12 na rękę.", t: 0 }
+  ]},
+  C: { title: "C – plecy i tył uda", items: [
+    { n: "Koci grzbiet + chodzenie tyłem", d: "1 min kociego grzbietu, potem 2 min chodzenia tyłem.", t: 180 },
+    { n: "Rumuński martwy ciąg z kettlebellem", d: "3–4 s w dół, aż poczujesz tył uda, plecy proste. 2 × 8.", t: 0 },
+    { n: "Ślizg nerwu kulszowego", d: "W leżeniu, dłonie pod kolanem: prostuj kolano i jednocześnie odchyl głowę do tyłu. 2 × 10 na nogę.", t: 0 },
+    { n: "Ptak-pies + deska boczna", d: "6 na stronę z 3 s zatrzymania; deska 2 × 20 s na stronę.", t: 20 },
+    { n: "Wznosy palców przy ścianie (ATG)", d: "Plecy przy ścianie, pięty 20–30 cm od niej. 1 × 15–20.", t: 0 }
+  ]}
+};
+// Pn..Nd -> dzień planu (null = wolne)
+const SCHEDULE = [null, "A", "B", "C", "A", "B", "C"]; // index = getDay() (0 = niedziela)
+const TESTS = [
+  { k: "sit", n: "Wstawanie z podłogi bez rąk (0–10)" },
+  { k: "squat", n: "Przysiad: sekundy z piętami na ziemi" },
+  { k: "arm", n: "Ręce nad głową przy ścianie (°)" },
+  { k: "toe", n: "Skłon: cm palców od podłogi (minus = poniżej)" },
+  { k: "knee", n: "Kolano do ściany: cm palców od ściany" }
+];
+const TEST_EVERY_DAYS = 56;
+const STORE = "mob.v1";
+
+function load() {
+  try { return JSON.parse(localStorage.getItem(STORE)) || { log: [], tests: [], checks: {} }; }
+  catch (e) { return { log: [], tests: [], checks: {} }; }
+}
+function save(state) { localStorage.setItem(STORE, JSON.stringify(state)); }
+function isoDate(d) {
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+function daysBetween(a, b) { return Math.round((new Date(b) - new Date(a)) / 86400000); }
+function fmt(sec) { return Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0"); }
+
+let state = load();
+const todayIso = isoDate(new Date());
+const todayKey = SCHEDULE[new Date().getDay()];
+let tab = todayKey || "A";
+
+function streak() {
+  const days = new Set(state.log.map(x => x.date));
+  let n = 0; const d = new Date();
+  if (!days.has(isoDate(d))) d.setDate(d.getDate() - 1);
+  while (days.has(isoDate(d))) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+
+function renderTabs() {
+  const tabs = ["A", "B", "C", "Postęp"];
+  const nav = document.getElementById("tabs");
+  nav.innerHTML = "";
+  tabs.forEach(k => {
+    const b = document.createElement("button");
+    b.textContent = k === "Postęp" ? "Postęp" : k + (k === todayKey ? " •" : "");
+    if (k === tab) b.className = "on";
+    b.onclick = () => { tab = k; render(); };
+    nav.appendChild(b);
+  });
+}
+
+function renderDay(key) {
+  const day = DAYS[key];
+  const checks = (state.checks[todayIso] && state.checks[todayIso][key]) || [];
+  const view = document.getElementById("view");
+  view.innerHTML = "";
+  const h = document.createElement("div");
+  h.className = "card rules";
+  h.innerHTML = "<b>" + day.title + "</b><br>Bez bólu: ciągnięcie najwyżej 3–5/10. Napięcia 20–30% siły. Opuszczanie 3–4 s.";
+  view.appendChild(h);
+
+  day.items.forEach((it, i) => {
+    const c = document.createElement("div");
+    c.className = "card" + (checks[i] ? " done" : "");
+    const row = document.createElement("div"); row.className = "row";
+    const cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = !!checks[i];
+    cb.onchange = () => {
+      state.checks[todayIso] = state.checks[todayIso] || {};
+      const arr = state.checks[todayIso][key] || [];
+      arr[i] = cb.checked;
+      state.checks[todayIso][key] = arr;
+      save(state); render();
+    };
+    const txt = document.createElement("div");
+    txt.innerHTML = '<div class="name"></div><div class="detail"></div>';
+    txt.querySelector(".name").textContent = (i + 1) + ". " + it.n;
+    txt.querySelector(".detail").textContent = it.d;
+    if (it.t > 0) {
+      const tb = document.createElement("button");
+      tb.className = "tbtn"; tb.textContent = "▶ Minutnik " + fmt(it.t);
+      tb.onclick = () => startTimer(it.t, it.n);
+      txt.appendChild(tb);
+    }
+    row.appendChild(cb); row.appendChild(txt); c.appendChild(row); view.appendChild(c);
+  });
+
+  const doneToday = state.log.some(x => x.date === todayIso && x.day === key);
+  const fin = document.createElement("button");
+  fin.className = "finish";
+  fin.textContent = doneToday ? "✓ Zapisano na dziś" : "Zakończ trening";
+  fin.disabled = doneToday;
+  fin.onclick = () => { state.log.push({ date: todayIso, day: key }); save(state); render(); };
+  view.appendChild(fin);
+}
+
+function renderProgress() {
+  const view = document.getElementById("view");
+  view.innerHTML = "";
+  const last = state.tests.length ? state.tests[state.tests.length - 1].date : null;
+  const due = !last || daysBetween(last, todayIso) >= TEST_EVERY_DAYS;
+  const last28 = state.log.filter(x => daysBetween(x.date, todayIso) < 28).length;
+
+  const s = document.createElement("div"); s.className = "card";
+  s.innerHTML =
+    '<div class="stat">Seria dni: <b>' + streak() + "</b></div>" +
+    '<div class="stat">Treningi w 28 dniach: <b>' + last28 + "</b> / 24</div>" +
+    '<div class="stat">Wszystkie treningi: <b>' + state.log.length + "</b></div>" +
+    '<div class="stat ' + (due ? "warn" : "") + '">' +
+    (last ? "Ostatnie pomiary: " + last + (due ? " – czas na nowe" : " (następne za " + (TEST_EVERY_DAYS - daysBetween(last, todayIso)) + " dni)") : "Zrób pomiary startowe") +
+    "</div>" +
+    '<div class="stat">Progresja co 2 tygodnie: jedna zmiana naraz (+1–2 powt., +10 s, wyższa kostka, cięższy kettlebell, 3 rundy PAILs/RAILs).</div>';
+  view.appendChild(s);
+
+  const f = document.createElement("div"); f.className = "card";
+  f.innerHTML = "<b>Nowe pomiary</b>";
+  TESTS.forEach(t => {
+    const l = document.createElement("label"); l.className = "f"; l.textContent = t.n;
+    const i = document.createElement("input"); i.className = "num"; i.type = "number"; i.inputMode = "decimal"; i.id = "t_" + t.k;
+    f.appendChild(l); f.appendChild(i);
+  });
+  const sb = document.createElement("button"); sb.className = "finish"; sb.textContent = "Zapisz pomiary";
+  sb.onclick = () => {
+    const rec = { date: todayIso };
+    let any = false;
+    TESTS.forEach(t => { const v = document.getElementById("t_" + t.k).value; if (v !== "") { rec[t.k] = Number(v); any = true; } });
+    if (!any) return;
+    state.tests.push(rec); save(state); render();
+  };
+  f.appendChild(sb);
+  view.appendChild(f);
+
+  if (state.tests.length) {
+    const tcard = document.createElement("div"); tcard.className = "card";
+    let html = "<b>Historia pomiarów</b><table><tr><th>Data</th><th>Wst.</th><th>Prz.</th><th>Ręce</th><th>Skł.</th><th>Kol.</th></tr>";
+    state.tests.slice().reverse().forEach(r => {
+      html += "<tr><td>" + r.date.slice(5) + "</td>" + TESTS.map(t => "<td>" + (r[t.k] ?? "–") + "</td>").join("") + "</tr>";
+    });
+    tcard.innerHTML = html + "</table>";
+    view.appendChild(tcard);
+  }
+}
+
+// Minutnik
+let tLeft = 0, tId = null, tPaused = false;
+function beep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ctx.createOscillator(); const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination); o.frequency.value = 880; g.gain.value = 0.2;
+    o.start(); o.stop(ctx.currentTime + 0.4);
+  } catch (e) { /* brak dźwięku – minutnik działa dalej */ }
+  if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+}
+function startTimer(sec, label) {
+  clearInterval(tId); tLeft = sec; tPaused = false;
+  document.getElementById("tlabel").textContent = label;
+  document.getElementById("tpause").textContent = "Pauza";
+  document.getElementById("timer").className = "show";
+  document.getElementById("tval").textContent = fmt(tLeft);
+  tId = setInterval(() => {
+    if (tPaused) return;
+    tLeft--;
+    document.getElementById("tval").textContent = fmt(Math.max(tLeft, 0));
+    if (tLeft > 0 && tLeft % 60 === 0) navigator.vibrate && navigator.vibrate(80);
+    if (tLeft <= 0) { clearInterval(tId); beep(); }
+  }, 1000);
+}
+document.getElementById("tpause").onclick = () => {
+  tPaused = !tPaused;
+  document.getElementById("tpause").textContent = tPaused ? "Dalej" : "Pauza";
+};
+document.getElementById("tstop").onclick = () => { clearInterval(tId); document.getElementById("timer").className = ""; };
+
+function render() {
+  const names = ["niedziela", "poniedziałek", "wtorek", "środa", "czwartek", "piątek", "sobota"];
+  document.getElementById("today").textContent =
+    "Dziś " + names[new Date().getDay()] + ": " + (todayKey ? DAYS[todayKey].title : "wolne – spacer");
+  renderTabs();
+  if (tab === "Postęp") renderProgress(); else renderDay(tab);
+}
+render();
+</script>
+</body>
+</html>
