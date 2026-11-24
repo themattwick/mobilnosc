@@ -71,12 +71,13 @@ const BLOCKS = {
   1: {
     A: { title: "A – biodra", items: [
       { n: "CARs biodra", d: "3 powolne kręgi w każdą stronę, na każdą nogę, przy ścianie.", t: 90, q: "hip CARs controlled articular rotations" },
-      { n: "Chodzenie tyłem", d: "Małe kroki na palcach, po pokoju lub korytarzu.", t: 120, q: "backward walking knees over toes" },
+      { n: "Lokomocja (Ido) + chodzenie tyłem", d: "Po 30 s: chód w głębokim przysiadzie, czworaki nisko (kolana tuż nad podłogą), chód w szerokim rozkroku, chodzenie tyłem na palcach.", t: 120, q: "Ido Portal locomotion squat walk crawl" },
       { n: "90/90 z PAILs/RAILs", d: "Na stronę: 1 min w pozycji, 10 s wciskaj kolano i stopę w podłogę (20–30%), 10 s unieś je bez rąk. 2 rundy na stronę.", t: 240, q: "90 90 hip PAILs RAILs" },
       { n: "Wykrok ATG, przednia stopa na kostce", d: "Kettlebell przy klatce, kolano za palce, tylne kolano do ziemi, 3–4 s w dół. 2 × 6 na nogę.", t: 0, q: "ATG split squat front foot elevated" },
       { n: "Przysiad z kettlebellem – przytrzymanie", d: "Na dole przenoś ciężar z boku na bok. 2 × 30 s.", t: 30, q: "goblet squat hold hip shift" }
     ]},
     B: { title: "B – barki i odcinek piersiowy", items: [
+      { n: "Lokomocja (Ido)", d: "Po 30 s: czworaki nisko do przodu, czworaki do tyłu, chód w głębokim przysiadzie, chód w szerokim rozkroku.", t: 120, q: "Ido Portal locomotion crawl" },
       { n: "CARs barku i kręgosłupa", d: "3 duże kręgi w każdą stronę na rękę; 4 × koci grzbiet krąg po kręgu.", t: 120, q: "shoulder CARs spine segmental cat cow" },
       { n: "Przenoszenie kettlebella za głowę", d: "Na plecach, oburącz, 3 s w dół. 2 × 10. Gdy łatwe: plecy na kostkach.", t: 0, q: "kettlebell pullover floor shoulder mobility" },
       { n: "Wyprost na wałku + otwieranie książki", d: "8 wolnych wyprostów, dłonie za głową; 6 otwarć na stronę.", t: 0, q: "foam roller thoracic extension open book" },
@@ -84,7 +85,7 @@ const BLOCKS = {
       { n: "Rotacja zewnętrzna z gumą", d: "Łokieć przy boku. 2 × 12 na rękę.", t: 0, q: "band external rotation elbow at side" }
     ]},
     C: { title: "C – plecy i tył uda", items: [
-      { n: "Koci grzbiet + chodzenie tyłem", d: "1 min kociego grzbietu, potem 2 min chodzenia tyłem.", t: 180, q: "cat cow backward walking" },
+      { n: "Koci grzbiet + lokomocja (Ido)", d: "1 min kociego grzbietu, potem po 30 s: chód w przysiadzie, czworaki nisko, chód w rozkroku, chodzenie tyłem.", t: 180, q: "Ido Portal locomotion squat walk crawl" },
       { n: "Rumuński martwy ciąg z kettlebellem", d: "3–4 s w dół, aż poczujesz tył uda, plecy proste. 2 × 8.", t: 0, q: "kettlebell romanian deadlift form" },
       { n: "Ślizg nerwu kulszowego", d: "W leżeniu, dłonie pod kolanem: prostuj kolano i jednocześnie odchyl głowę do tyłu. 2 × 10 na nogę.", t: 0, q: "sciatic nerve slider supine" },
       { n: "Ptak-pies + deska boczna", d: "6 na stronę z 3 s zatrzymania; deska 2 × 20 s na stronę.", t: 20, q: "bird dog side plank McGill" },
@@ -94,12 +95,13 @@ const BLOCKS = {
   2: {
     A: { title: "A2 – biodra", items: [
       { n: "Samolot biodrowy z podparciem", d: "5 powtórzeń w każdą stronę na nogę, 5 s zatrzymania.", t: 0, q: "hip airplane squat university" },
-      { n: "Chodzenie tyłem w półprzysiadzie", d: "Małe kroki, kolana zgięte.", t: 120, q: "backward walking half squat" },
+      { n: "Lokomocja (Ido) + chodzenie tyłem w półprzysiadzie", d: "Po 30 s: chód w głębokim przysiadzie, czworaki nisko w bok, chód w szerokim rozkroku, chodzenie tyłem w półprzysiadzie.", t: 120, q: "Ido Portal locomotion squat walk lateral crawl" },
       { n: "Zginacze biodra z PAILs/RAILs", d: "Klęk, przednia stopa na kostce: 1 min, 10 s wciskaj tylne kolano w podłogę, 10 s unieś je minimalnie. 2 rundy na stronę.", t: 240, q: "hip flexor PAILs RAILs kneeling" },
       { n: "Przysiad z piętami na kostkach (ATG)", d: "Kettlebell przy klatce, kolana przed palce, 3–4 s w dół. 2 × 8.", t: 0, q: "heels elevated goblet squat knees over toes" },
       { n: "Przysiad boczny (kozak) z kettlebellem", d: "3 s w dół. 2 × 5 na stronę.", t: 0, q: "kettlebell cossack squat" }
     ]},
     B: { title: "B2 – barki i odcinek piersiowy", items: [
+      { n: "Lokomocja (Ido)", d: "Po 30 s: czworaki nisko w bok, czworaki do tyłu, chód w głębokim przysiadzie, chód w szerokim rozkroku.", t: 120, q: "Ido Portal locomotion lateral crawl" },
       { n: "CARs barku i łopatki", d: "3 kręgi w każdą stronę.", t: 90, q: "shoulder CARs scapular CARs" },
       { n: "Halo z kettlebellem", d: "Wokół głowy, 2 × 6 w każdą stronę.", t: 0, q: "kettlebell halo" },
       { n: "Wyciskanie kettlebella w klęku jednonóż", d: "3 s w dół, pełny zakres. 2 × 8 na rękę.", t: 0, q: "half kneeling kettlebell press" },
@@ -107,7 +109,7 @@ const BLOCKS = {
       { n: "Ślizgi po ścianie z gumą", d: "Guma na nadgarstkach. 2 × 10.", t: 0, q: "wall slides with band" }
     ]},
     C: { title: "C2 – plecy i tył uda", items: [
-      { n: "CARs kręgosłupa + chodzenie tyłem", d: "1 min powolnych kręgów tułowiem na stojąco, potem 2 min chodzenia tyłem.", t: 180, q: "standing spine CARs" },
+      { n: "CARs kręgosłupa + lokomocja (Ido)", d: "1 min powolnych kręgów tułowiem na stojąco, potem po 30 s: chód w przysiadzie, czworaki nisko w bok, chód w rozkroku, chodzenie tyłem.", t: 180, q: "standing spine CARs Ido Portal locomotion" },
       { n: "Martwy ciąg na jednej nodze z kettlebellem", d: "3 s w dół. 2 × 6 na nogę.", t: 0, q: "single leg kettlebell romanian deadlift" },
       { n: "Ślizg nerwu na siedząco", d: "Na krześle prostuj kolano, jednocześnie odchylając głowę do tyłu. 2 × 10 na nogę.", t: 0, q: "seated sciatic nerve slider" },
       { n: "Martwy robak + deska boczna", d: "2 × 8 na stronę; deska 2 × 20 s na stronę.", t: 20, q: "dead bug exercise side plank" },
