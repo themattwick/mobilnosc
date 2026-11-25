@@ -28,6 +28,7 @@
   .actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
   .tbtn { padding:10px 14px; border-radius:10px; border:none; background:var(--line); color:var(--text); font-size:15px; text-decoration:none; display:inline-block; }
   a.tbtn { color:var(--link); }
+  button:disabled { opacity:.45; }
   .rules { font-size:15px; color:var(--muted); }
   .rules b { color:var(--text); }
   #timer { position:fixed; left:0; right:0; bottom:0; background:var(--card); border-top:1px solid var(--line); padding:12px 16px; display:none; align-items:center; gap:12px; z-index:3; }
@@ -117,6 +118,24 @@ const BLOCKS = {
     ]}
   }
 };
+const MORNING = [
+  { g: "Całe ciało", v: [
+    { t: "Wake Up Yoga", ch: "Yoga With Adriene", m: 11, id: "UEEsdXn8oG8" },
+    { t: "Morning Stretch & Full Body Mobility", ch: "Yoga With Tim", m: 11, id: "bQa6VKPoyFw" },
+    { t: "Gentle Morning Yoga for Beginners", ch: "Yoga with Kassandra", m: 11, id: "C2RAjUEAoLI" }
+  ]},
+  { g: "Biodra i dolne plecy", v: [
+    { t: "Morning Yoga For Hips & Lower Back", ch: "Yoga with Kassandra", m: 12, id: "rBfdsyk8UK0" },
+    { t: "Joga – 10 minut dla bioder (PL)", ch: "Małgorzata Mostowska", m: 10, id: "NPn2yLiOt6A" }
+  ]},
+  { g: "Barki i górne plecy", v: [
+    { t: "Mobility Yoga for Rounded Shoulders", ch: "SarahBethYoga", m: 14, id: "6YgehNFlYH0" },
+    { t: "Neck, Shoulders, Upper Back", ch: "Yoga With Adriene", m: 11, id: "X3-gKPNyrTA" }
+  ]},
+  { g: "Kręgosłup (PL)", v: [
+    { t: "Joga – 10 minut dla kręgosłupa", ch: "Małgorzata Mostowska", m: 10, id: "MZC5BosU4U4" }
+  ]}
+];
 const SCHEDULE = [null, "A", "B", "C", "A", "B", "C"]; // indeks = getDay(), 0 = niedziela (wolne)
 const TESTS = [
   { k: "sit", n: "Wstawanie z podłogi bez rąk (0–10)" },
@@ -129,7 +148,7 @@ const TEST_EVERY_DAYS = 56;
 const BLOCK_SWITCH_DAYS = 28;
 const STORE = "mob.v1";
 
-function emptyState() { return { log: [], tests: [], checks: {}, block: 1, blockSince: null }; }
+function emptyState() { return { log: [], tests: [], checks: {}, block: 1, blockSince: null, morning: [] }; }
 function load() {
   try { return Object.assign(emptyState(), JSON.parse(localStorage.getItem(STORE)) || {}); }
   catch (e) { return emptyState(); }
@@ -168,8 +187,8 @@ function el(tag, cls, text) {
 function renderTabs() {
   const nav = document.getElementById("tabs");
   nav.innerHTML = "";
-  ["A", "B", "C", "Postęp"].forEach(k => {
-    const b = el("button", k === tab ? "on" : "", k === "Postęp" ? "Postęp" : k + (k === todayKey ? " •" : ""));
+  ["A", "B", "C", "Rano", "Postęp"].forEach(k => {
+    const b = el("button", k === tab ? "on" : "", /^[ABC]$/.test(k) ? k + (k === todayKey ? " •" : "") : k);
     b.onclick = () => { tab = k; render(); };
     nav.appendChild(b);
   });
@@ -271,6 +290,38 @@ function renderBackupCard(view) {
   view.appendChild(c);
 }
 
+function renderMorning() {
+  const view = document.getElementById("view");
+  view.innerHTML = "";
+  const doneToday = state.morning.find(x => x.date === todayIso);
+  const last28 = state.morning.filter(x => daysBetween(x.date, todayIso) < 28).length;
+  const top = el("div", "card rules");
+  top.appendChild(el("b", "", "Poranna joga, 10–15 min"));
+  top.appendChild(el("div", "", "Poranki w 28 dniach: " + last28 + " · wszystkie: " + state.morning.length));
+  top.appendChild(el("div", "", "Rano kręgosłup jest bardziej nawodniony: głębokie skłony w przód zostaw na koniec albo 20–30 min po wstaniu."));
+  view.appendChild(top);
+  MORNING.forEach(grp => {
+    const c = el("div", "card");
+    c.appendChild(el("b", "", grp.g));
+    grp.v.forEach(v => {
+      const row = el("div", "row"); row.style.marginTop = "10px"; row.style.alignItems = "center";
+      const txt = el("div"); txt.style.flex = "1";
+      txt.appendChild(el("div", "name", v.t));
+      txt.appendChild(el("div", "detail", v.ch + " · " + v.m + " min" + (doneToday && doneToday.id === v.id ? " · ✓ dziś" : "")));
+      const a = el("a", "tbtn", "Otwórz ↗");
+      a.href = "https://www.youtube.com/watch?v=" + v.id; a.target = "_blank"; a.rel = "noopener";
+      const d = el("button", "tbtn", "✓");
+      d.title = "Zrobione dziś";
+      d.disabled = !!doneToday;
+      d.onclick = () => { state.morning.push({ date: todayIso, id: v.id }); save(state); render(); };
+      row.appendChild(txt); row.appendChild(a); row.appendChild(d);
+      c.appendChild(row);
+    });
+    view.appendChild(c);
+  });
+  if (doneToday) view.appendChild(el("div", "msg", "Poranek zapisany. Jutro kolejny."));
+}
+
 function renderProgress() {
   const view = document.getElementById("view");
   view.innerHTML = "";
@@ -282,6 +333,7 @@ function renderProgress() {
   s.appendChild(el("div", "stat", "Seria dni: " + streak()));
   s.appendChild(el("div", "stat", "Treningi w 28 dniach: " + last28 + " / 24"));
   s.appendChild(el("div", "stat", "Wszystkie treningi: " + state.log.length));
+  s.appendChild(el("div", "stat", "Poranki jogi w 28 dniach: " + state.morning.filter(x => daysBetween(x.date, todayIso) < 28).length));
   s.appendChild(el("div", "stat" + (due ? " warn" : ""), last
     ? "Ostatnie pomiary: " + last + (due ? " – czas na nowe" : " (następne za " + (TEST_EVERY_DAYS - daysBetween(last, todayIso)) + " dni)")
     : "Zrób pomiary startowe"));
@@ -364,7 +416,7 @@ function render() {
   document.getElementById("today").textContent =
     "Dziś " + names[new Date().getDay()] + ": " + (todayKey ? currentDays()[todayKey].title : "wolne – spacer") + " · blok " + state.block;
   renderTabs();
-  if (tab === "Postęp") renderProgress(); else renderDay(tab);
+  if (tab === "Postęp") renderProgress(); else if (tab === "Rano") renderMorning(); else renderDay(tab);
 }
 render();
 </script>
